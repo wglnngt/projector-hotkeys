@@ -25,31 +25,31 @@ startup_projectors = {}
 hotkey_ids = {}
 
 ffi.cdef[[
-	typedef struct {
-		long left;
-		long top;
-		long right;
-		long bottom;
-	} RECT;
+    typedef struct {
+        long left;
+        long top;
+        long right;
+        long bottom;
+    } RECT;
 
-	typedef struct {
-		unsigned long cbSize;
-		RECT rcMonitor;
-		RECT rcWork;
-		unsigned long dwFlags;
-	} MONITORINFO;
+    typedef struct {
+        unsigned long cbSize;
+        RECT rcMonitor;
+        RECT rcWork;
+        unsigned long dwFlags;
+    } MONITORINFO;
 
-	typedef struct {
-		long x;
-		long y;
-	} POINT;
+    typedef struct {
+        long x;
+        long y;
+    } POINT;
 
-	void* MonitorFromPoint(POINT pt, unsigned long dwFlags);
-	bool GetMonitorInfoA(void* hMonitor, MONITORINFO* lpmi);
+    void* MonitorFromPoint(POINT pt, unsigned long dwFlags);
+    bool GetMonitorInfoA(void* hMonitor, MONITORINFO* lpmi);
 
-	typedef int (__stdcall *MONITORENUMPROC)(void*, void*, RECT*, long);
+    typedef int (__stdcall *MONITORENUMPROC)(void*, void*, RECT*, long);
 
-	int EnumDisplayMonitors(void* hdc, const RECT* lprcClip, MONITORENUMPROC lpfnEnum, long dwData);
+    int EnumDisplayMonitors(void* hdc, const RECT* lprcClip, MONITORENUMPROC lpfnEnum, long dwData);
 ]]
 
 function MonitorEnumProc(hMonitor, hdcMonitor, lprcMonitor, dwData)
@@ -64,7 +64,7 @@ function MonitorEnumProc(hMonitor, hdcMonitor, lprcMonitor, dwData)
             width = info.rcMonitor.right - info.rcMonitor.left,
             height = info.rcMonitor.bottom - info.rcMonitor.top,
         })
-		--print("Detected monitor")
+        --print("Detected monitor")
     end
     return 1
 end
@@ -78,40 +78,40 @@ end
 
 -- Get real monitor number by coordinate
 function get_real_number(monitor_index)
-	print("Current input monitor number is: " .. monitor_index + 1)
+    print("Current input monitor number is: " .. monitor_index + 1)
 
-	-- Coordinate mapping[KOUKON 2024/05/10]
-	if monitor_index == 0 then
-		-- For number 1 choice, projecting to main monitor
-		for _, omonitor in ipairs(arr_monitors) do
-			if omonitor.left == 0 then
-				monitor_index = _ - 1 -- Based on 1
-				break
-			end
-		end
-	elseif monitor_index == 1 then
-		-- For number 2 choice, projecting to right monitor
-		for _, omonitor in ipairs(arr_monitors) do
-			if omonitor.left >= arr_monitors[1].width then
-				monitor_index = _ - 1 -- Based on 1
-				break
-			end
-		end
-	elseif monitor_index == 2 then
-		-- For number 3 choice, projecting to left monitor
-		for _, omonitor in ipairs(arr_monitors) do
-			if omonitor.left < 0 then
-				monitor_index = _ - 1 -- Based on 1
-				break
-			end
-		end
-	end
+    -- Coordinate mapping[KOUKON 2024/05/10]
+    if monitor_index == 0 then
+        -- For number 1 choice, projecting to main monitor
+        for _, omonitor in ipairs(arr_monitors) do
+            if omonitor.left == 0 then
+                monitor_index = _ - 1 -- Based on 1
+                break
+            end
+        end
+    elseif monitor_index == 1 then
+        -- For number 2 choice, projecting to right monitor
+        for _, omonitor in ipairs(arr_monitors) do
+            if omonitor.left >= arr_monitors[1].width then
+                monitor_index = _ - 1 -- Based on 1
+                break
+            end
+        end
+    elseif monitor_index == 2 then
+        -- For number 3 choice, projecting to left monitor
+        for _, omonitor in ipairs(arr_monitors) do
+            if omonitor.left < 0 then
+                monitor_index = _ - 1 -- Based on 1
+                break
+            end
+        end
+    end
 
-	return monitor_index
+    return monitor_index
 end
 
 function script_description()
-	enumerate_monitors()
+    enumerate_monitors()
 
     local description = [[
         <center><h2>Fullscreen Projector Hotkeys</h2></center>
@@ -122,12 +122,12 @@ function script_description()
         will be duplicate projectors.</p>
         <p><b>If new scenes are added, or if scene names change, this script will need to be
         reloaded.</b></p>]]
-	
-	description = description .. "<p><b>Current monitors: </b></p>"
-	for _, omonitor in ipairs(arr_monitors) do
-		description = description .. "<p>Index " .. _ .. ": (" .. omonitor.left .. "," .. omonitor.top .. ")	" .. omonitor.width .. "x" .. omonitor.height .. "</p>"
-	end
-	--print(description)
+    
+    description = description .. "<p><b>Current monitors: </b></p>"
+    for _, omonitor in ipairs(arr_monitors) do
+        description = description .. "<p>Index " .. _ .. ": (" .. omonitor.left .. "," .. omonitor.top .. ")    " .. omonitor.width .. "x" .. omonitor.height .. "</p>"
+    end
+    --print(description)
 
     return description
 end
@@ -148,10 +148,10 @@ function script_properties()
     end
 
     -- set up the controls for the Source
-	local gp = obs.obs_properties_create()
-	obs.obs_properties_add_group(p, SOURCE .. GROUP, SOURCE, obs.OBS_GROUP_NORMAL, gp)
-	obs.obs_properties_add_int(gp, SOURCE, "Project to monitor:", 1, 10, 1)
-	obs.obs_properties_add_bool(gp, SOURCE .. STARTUP, "Open on Startup")
+    local gp = obs.obs_properties_create()
+    obs.obs_properties_add_group(p, SOURCE .. GROUP, SOURCE, obs.OBS_GROUP_NORMAL, gp)
+    obs.obs_properties_add_int(gp, SOURCE, "Project to monitor:", 1, 10, 1)
+    obs.obs_properties_add_bool(gp, SOURCE .. STARTUP, "Open on Startup")
 
     -- set up the controls for the Program Output
     local gp = obs.obs_properties_create()
@@ -173,8 +173,8 @@ function script_update(settings)
 end
 
 function script_load(settings)   
-	enumerate_monitors()
-	print("Total monitor count is: " .. #arr_monitors)
+    enumerate_monitors()
+    print("Total monitor count is: " .. #arr_monitors)
 
     local scenes = obs.obs_frontend_get_scene_names()
     if scenes == nil or #scenes == 0 then
@@ -247,7 +247,7 @@ function register_hotkeys(settings)
             end
         )
 
-		--print(output_to_function_name(output))
+        --print(output_to_function_name(output))
         local hotkey_save_array = obs.obs_data_get_array(settings, output_to_function_name(output))
         obs.obs_hotkey_load(hotkey_ids[output], hotkey_save_array)
         obs.obs_data_array_release(hotkey_save_array)
@@ -262,7 +262,7 @@ function open_fullscreen_projector(output)
         monitors[output] = DEFAULT_MONITOR
     end
 
-	nMonitorIndex = get_real_number(monitors[output])
+    nMonitorIndex = get_real_number(monitors[output])
 
     -- set the projector type if this is not a normal scene
     local projector_type = PROJECTOR_TYPE_SCENE
@@ -274,7 +274,7 @@ function open_fullscreen_projector(output)
         projector_type = PROJECTOR_TYPE_SOURCE
     end
 
-	print("Current monitor for key : " .. output .. "\n\t\t " .. output .. "'s true index is : " .. nMonitorIndex)
+    print("Current monitor for key : " .. output .. "\n\t\t " .. output .. "'s true index is : " .. nMonitorIndex)
 
     -- call the front end API to open the projector
     obs.obs_frontend_open_projector(projector_type, nMonitorIndex, "", output)
